@@ -56,9 +56,11 @@ __global__ void MatrixMulKernel(Matrix M, Matrix N, Matrix P)
     int tile_col = threadIdx.x, tile_row = threadIdx.y;
     float ret = 0;
 
-    /* printf("%d %d\n", threadIdx.x, threadIdx.y); */
-    __shared__ float Ms[TILE_WIDTH][TILE_WIDTH];
-    __shared__ float Ns[TILE_WIDTH][TILE_WIDTH];
+/*
+Since TILE_WIDTH=32, use TILE_WIDTH+1 to pad the array and resolve bank conflict 
+*/
+    __shared__ float Ms[TILE_WIDTH][TILE_WIDTH + 1];
+    __shared__ float Ns[TILE_WIDTH][TILE_WIDTH + 1];
     
     int ncol_tiles = M.width / TILE_WIDTH + (M.width % TILE_WIDTH ? 1 : 0);
     for (int i = 0; i < ncol_tiles; i++)
