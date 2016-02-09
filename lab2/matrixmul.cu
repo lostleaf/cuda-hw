@@ -49,12 +49,6 @@
 // includes, kernels
 #include <matrixmul_kernel.cu>
 
-#define DEBUGING
-#ifdef DEBUGING
-#include "helper_cuda.h"
-#include "my_timer.h"
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // declarations, forward
 
@@ -121,15 +115,7 @@ int main(int argc, char** argv) {
 	// compute the matrix multiplication on the CPU for comparison
 	Matrix reference = AllocateMatrix(P.height, P.width, 0);
 
-#ifdef DEBUGING
-    Timer timer("CPU");
-    timer.start();
-#endif
 	computeGold(reference.elements, M.elements, N.elements, M.height, M.width, N.width);
-#ifdef DEBUGING
-    timer.end();
-    timer.print_elapsed();
-#endif
         
 	printf("CPU computation complete\n");
 	// in this case check if the result is equivalent to the expected soluion
@@ -173,20 +159,9 @@ void MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
     int grid_cols = P.width / TILE_WIDTH + (P.width % TILE_WIDTH ? 1 : 0);
     dim3 grid_size(grid_cols, grid_rows);
 
-#ifdef DEBUGING
-    Timer timer("GPU");
-    timer.start();
-#endif
-
 	// Launch the device computation threads!
     MatrixMulKernel<<< grid_size, block_size >>> (Md, Nd, Pd);
 
-#ifdef DEBUGING
-    cudaDeviceSynchronize();
-    timer.end();
-    timer.print_elapsed();
-    checkCudaErrors(cudaGetLastError());
-#endif
 	// Read P from the device
 	CopyFromDeviceMatrix(P, Pd); 
 
