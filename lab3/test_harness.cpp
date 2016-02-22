@@ -82,27 +82,40 @@ int main(int argc, char* argv[])
     // A 2D array of histogram bin-ids.  One can think of each of these bins-ids as
     // being associated with a pixel in a 2D image.
     uint32_t **input = generate_histogram_bins();
-
+    
     TIME_IT("ref_2dhisto",
-            1000,
+            // 1000,
+            1,
             ref_2dhisto(input, INPUT_HEIGHT, INPUT_WIDTH, gold_bins);)
 
     /* Include your setup code below (temp variables, function calls, etc.) */
-
-
-
+    uint8_t *d_bins;
+    uint32_t *d_input;
+    int *d_bins_32;
+    init(&d_bins, &d_input, &d_bins_32, HISTO_WIDTH, HISTO_HEIGHT, INPUT_WIDTH, INPUT_HEIGHT, &input[0][0]);
     /* End of setup code */
 
     /* This is the call you will use to time your parallel implementation */
     TIME_IT("opt_2dhisto",
-            1000,
-            opt_2dhisto( /*Define your own function parameters*/ );)
+            // 1000,
+            1,
+            opt_2dhisto(d_bins, d_input, d_bins_32, INPUT_WIDTH, INPUT_HEIGHT, HISTO_HEIGHT * HISTO_WIDTH);)
 
     /* Include your teardown code below (temporary variables, function calls, etc.) */
 
-
+    final(d_bins, d_input, d_bins_32, kernel_bins, HISTO_HEIGHT * HISTO_WIDTH);
 
     /* End of teardown code */
+
+    printf("gold\n");
+    for (int i=0; i < HISTO_HEIGHT*HISTO_WIDTH; i++){
+        printf("%d ", gold_bins[i]);
+    }
+    printf("\nkernel\n");
+    for (int i=0; i < HISTO_HEIGHT*HISTO_WIDTH; i++){
+        printf("%d ", kernel_bins[i]);
+    }
+    printf("\n");
 
     int passed=1;
     for (int i=0; i < HISTO_HEIGHT*HISTO_WIDTH; i++){

@@ -1,2 +1,4 @@
 lab*/obj/
 .ycm_extra_conf.py
+*.pyc
+.*.swp
