@@ -10,16 +10,20 @@
 
 const int BIN_SIZE = HISTO_WIDTH * HISTO_HEIGHT;
 const int INPUT_WIDTH_PAD = (INPUT_WIDTH+ 128) & 0xFFFFFF80;
+const int N = 64;
 
 __global__ void hist_kernel(int *d_bins_32, uint32_t *d_input)
 {
     __shared__ int d_bins_32_smem[HISTO_WIDTH * HISTO_HEIGHT];
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = x % INPUT_WIDTH + x / INPUT_WIDTH * INPUT_WIDTH_PAD;
+    int x = blockIdx.x * (N * blockDim.x) + threadIdx.x;
     d_bins_32_smem[threadIdx.x] = 0;
     __syncthreads();
-    uint32_t val = d_input[i];
-    atomicAdd(d_bins_32_smem + val, 1);
+    for (int j = 0; j < N; j++, x += blockDim.x)
+    {
+        int i = x % INPUT_WIDTH + x / INPUT_WIDTH * INPUT_WIDTH_PAD;
+        uint32_t val = d_input[i];
+        atomicAdd(d_bins_32_smem + val, 1);
+    }
     __syncthreads();
     atomicAdd(d_bins_32 + threadIdx.x, d_bins_32_smem[threadIdx.x]);
 }
@@ -42,7 +46,7 @@ void opt_2dhisto(uint8_t *d_bins, uint32_t *d_input, int *d_bins_32)
        histogramming kernel. Any memory allocations and
        transfers must be done outside this function */
     int block_size = 1024;
-    int grid_size = (INPUT_HEIGHT * INPUT_WIDTH - 1) / block_size + 1;
+    int grid_size = (INPUT_HEIGHT * INPUT_WIDTH - 1) / (N * block_size) + 1;
 
     cudaMemset(d_bins_32, 0, sizeof(uint32_t) * BIN_SIZE);
 
