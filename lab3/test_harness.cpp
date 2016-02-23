@@ -106,17 +106,6 @@ int main(int argc, char* argv[])
     final(d_bins, d_input, d_bins_32, kernel_bins);
 
     /* End of teardown code */
-/*
-    printf("gold\n");
-    for (int i=0; i < HISTO_HEIGHT*HISTO_WIDTH; i++){
-        printf("%d ", gold_bins[i]);
-    }
-    printf("\nkernel\n");
-    for (int i=0; i < HISTO_HEIGHT*HISTO_WIDTH; i++){
-        printf("%d ", kernel_bins[i]);
-    }
-    printf("\n");
-*/
     int passed=1;
     for (int i=0; i < HISTO_HEIGHT*HISTO_WIDTH; i++){
         if (gold_bins[i] != kernel_bins[i]){

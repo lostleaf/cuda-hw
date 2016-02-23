@@ -6,8 +6,6 @@
 #include "util.h"
 #include "ref_2dhisto.h"
 
-#include "helper_cuda.h"
-
 const int BIN_SIZE = HISTO_WIDTH * HISTO_HEIGHT;
 const int INPUT_WIDTH_PAD = (INPUT_WIDTH+ 128) & 0xFFFFFF80;
 const int N = 64;
@@ -54,8 +52,6 @@ void opt_2dhisto(uint8_t *d_bins, uint32_t *d_input, int *d_bins_32)
 
     grid_size = (BIN_SIZE - 1) / block_size + 1;
     hist32to8_kernel<<<grid_size, block_size>>>(d_bins_32, d_bins);
-
-    checkCudaErrors(cudaGetLastError());
 }
 
 /* Include below the implementation of any other functions you need */
